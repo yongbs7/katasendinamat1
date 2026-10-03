@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Misi Angkasa - Kata Sendi Nama</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#071329;color:#fff}
+#app{max-width:760px;margin:auto;min-height:100vh;padding:14px;background:linear-gradient(145deg,#071329,#172554)}
+.hero{padding:28px 15px;text-align:center;border-radius:20px;background:
+radial-gradient(circle at 15% 25%,#fff 0 1px,transparent 2px),
+radial-gradient(circle at 70% 15%,#fff 0 1px,transparent 2px),
+radial-gradient(circle at 85% 70%,#fff 0 1px,transparent 2px),#081329}
+h1{margin:0;font-size:clamp(28px,7vw,42px)}
+.subtitle{margin-top:7px;color:#bae6fd}
+.hud{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+.hudbox,.panel{background:#102044;border:1px solid #33466f;border-radius:16px}
+.hudbox{text-align:center;padding:10px}
+.label{font-size:12px;color:#cbd5e1}.value{font-size:20px;font-weight:bold;margin-top:3px}
+.panel{padding:18px}.mission{color:#bae6fd;font-weight:bold;font-size:13px}
+.question{font-size:clamp(21px,5vw,29px);font-weight:bold;line-height:1.4;margin:16px 0}
+.answers{display:grid;gap:11px}
+.answer,.primary,.secondary{min-height:52px;border-radius:14px;cursor:pointer;font-weight:bold;touch-action:manipulation}
+.answer{border:2px solid #506080;background:#1b315f;color:#fff;text-align:left;padding:12px 15px;font-size:18px}
+.answer.correct{background:#14532d;border-color:#4ade80}
+.answer.wrong{background:#7f1d1d;border-color:#f87171}
+.feedback{text-align:center;min-height:35px;margin-top:12px;font-weight:bold}
+.primary,.secondary{padding:12px 20px;font-size:17px;border:0}
+.primary{background:#fbbf24;color:#172033}.secondary{background:#1b315f;color:#fff;border:1px solid #64748b}
+.center{text-align:center}.rocket{font-size:48px}
+input{width:100%;padding:13px;border-radius:12px;border:2px solid #64748b;font-size:17px;margin:8px 0 12px}
+.certificate{background:#fff;color:#172033;border:8px double #334155;border-radius:10px;padding:25px 15px;text-align:center;margin:16px 0}
+.certificate h2{font-family:Georgia,serif;color:#172554;font-size:clamp(25px,7vw,37px);margin:10px 0}
+.certtype{font-weight:bold;color:#92400e;font-size:18px}
+.certname{font-family:Georgia,serif;font-size:clamp(25px,7vw,36px);font-weight:bold;border-bottom:2px solid #94a3b8;padding:7px;margin:18px auto;word-break:break-word}
+.certificate p{line-height:1.5}.stars{font-size:25px;letter-spacing:4px}
+.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+@media(max-width:430px){#app{padding:9px}.panel{padding:14px}.answer{font-size:17px}}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="hero">
+<h1>🚀 Misi Angkasa</h1>
+<div class="subtitle">Kata Sendi Nama: <b>di • dari • ke</b></div>
+</div>
+
+<div class="hud">
+<div class="hudbox"><div class="label">Soalan</div><div class="value" id="counter">1 / 10</div></div>
+<div class="hudbox"><div class="label">⭐ Markah</div><div class="value" id="score">0</div></div>
+<div class="hudbox"><div class="label">❤️ Nyawa</div><div class="value" id="lives">❤️❤️❤️</div></div>
+</div>
+
+<div class="panel" id="panel"></div>
+</div>
+
+<script>
+(function(){
+const questions=[
+{q:"Aiman berada ___ dalam kelas.",a:["di","dari","ke"],c:0},
+{q:"Murid-murid berjalan ___ kantin.",a:["dari","ke","di"],c:1},
+{q:"Siti datang ___ rumah nenek.",a:["ke","di","dari"],c:2},
+{q:"Buku itu ada ___ atas meja.",a:["di","ke","dari"],c:0},
+{q:"Kami pergi ___ perpustakaan.",a:["dari","di","ke"],c:2},
+{q:"Ayah pulang ___ pejabat.",a:["ke","dari","di"],c:1},
+{q:"Murid membaca ___ perpustakaan.",a:["ke","dari","di"],c:2},
+{q:"Kakak bergerak ___ bilik ke ruang tamu.",a:["di","dari","ke"],c:1},
+{q:"Kami akan pergi ___ sekolah esok.",a:["ke","di","dari"],c:0},
+{q:"Ali keluar ___ kelas pada waktu rehat.",a:["di","ke","dari"],c:2}
+];
+
+let n=0,score=0,lives=3,locked=false;
+const panel=document.getElementById("panel");
+const counter=document.getElementById("counter");
+const scoreEl=document.getElementById("score");
+const livesEl=document.getElementById("lives");
+
+function updateHud(){
+counter.textContent=(n+1)+" / 10";
+scoreEl.textContent=score;
+livesEl.textContent="❤️".repeat(lives)+"♡".repeat(3-lives);
+}
+
+function showQuestion(){
+locked=false;
+updateHud();
+const item=questions[n];
+panel.innerHTML=
+'<div class="mission">🌌 MISI '+String(n+1).padStart(2,"0")+' — Pilih kata sendi nama yang betul.</div>'+
+'<div class="question">'+item.q+'</div>'+
+'<div class="answers" id="answers"></div>'+
+'<div class="feedback" id="feedback" aria-live="polite"></div>';
+
+const answers=document.getElementById("answers");
+item.a.forEach(function(text,i){
+const btn=document.createElement("button");
+btn.type="button";
+btn.className="answer";
+btn.textContent=String.fromCharCode(65+i)+". "+text;
+btn.addEventListener("click",function(){answer(i,btn)});
+answers.appendChild(btn);
+});
+}
+
+function answer(choice,clicked){
+if(locked)return;
+locked=true;
+const item=questions[n];
+const buttons=[...document.querySelectorAll(".answer")];
+buttons.forEach(b=>b.disabled=true);
+const feedback=document.getElementById("feedback");
+
+if(choice===item.c){
+score++;
+clicked.classList.add("correct");
+feedback.textContent="🌟 Betul! Hebat!";
+feedback.style.color="#86efac";
+}else{
+lives--;
+clicked.classList.add("wrong");
+buttons[item.c].classList.add("correct");
+feedback.textContent="💫 Belum tepat. Jawapan betul ialah \""+item.a[item.c]+"\".";
+feedback.style.color="#fca5a5";
+}
+updateHud();
+
+setTimeout(function(){
+if(lives<=0 || n===9) showResult();
+else {n++;showQuestion();}
+},900);
+}
+
+function showResult(){
+const award=score>=8?"Penghargaan":"Penyertaan";
+panel.innerHTML=
+'<div class="center">'+
+'<div class="rocket">🚀</div>'+
+'<h2>Misi Tamat!</h2>'+
+'<p style="font-size:22px;font-weight:bold">Markah: '+score+' / 10</p>'+
+'<p>'+(score>=8?"Tahniah! Anda berjaya menyelesaikan misi! 🌟":"Terima kasih kerana menyertai misi angkasa! 🚀")+'</p>'+
+'<label for="name"><b>Nama murid</b></label>'+
+'<input id="name" maxlength="60" placeholder="Taip nama murid di sini">'+
+'<div class="certificate">'+
+'<div class="stars">★ ★ ★</div>'+
+'<h2>Sijil '+award+'</h2>'+
+'<div class="certtype">MISI ANGKASA KATA SENDI NAMA</div>'+
+'<p>Dengan ini disahkan bahawa</p>'+
+'<div class="certname" id="certName">Nama Murid</div>'+
+'<p>telah menyertai permainan interaktif<br><b>Kata Sendi Nama: di • dari • ke</b></p>'+
+'<p><b>Markah: '+score+' / 10</b></p>'+
+'<p>Tahun 1 • Bahasa Melayu</p>'+
+'<div class="stars">🚀 ⭐ 🌙</div>'+
+'</div>'+
+'<div class="actions">'+
+'<button class="primary" id="download">⬇️ Download Sijil</button>'+
+'<button class="secondary" id="restart">🔄 Main Semula</button>'+
+'</div></div>';
+
+const name=document.getElementById("name");
+name.addEventListener("input",function(){
+document.getElementById("certName").textContent=name.value.trim()||"Nama Murid";
+});
+document.getElementById("download").addEventListener("click",downloadCertificate);
+document.getElementById("restart").addEventListener("click",function(){
+n=0;score=0;lives=3;showQuestion();
+});
+}
+
+function downloadCertificate(){
+const rawName=document.getElementById("name").value.trim()||"Nama Murid";
+const safeName=rawName.replace(/[<>]/g,"");
+const award=score>=8?"Penghargaan":"Penyertaan";
+const fileName="Sijil_"+award+"_"+safeName.replace(/\s+/g,"_")+".html";
+
+const cert='<!DOCTYPE html><html lang="ms"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sijil '+award+'</title>'+
+'<style>body{font-family:Arial,sans-serif;background:#eef2ff;padding:30px}.certificate{max-width:850px;margin:auto;background:#fff;border:12px double #334155;padding:55px 30px;text-align:center}.title{font:42px Georgia,serif;color:#172554}.type{font-size:24px;font-weight:bold;color:#92400e}.name{font:38px Georgia,serif;font-weight:bold;border-bottom:2px solid #94a3b8;display:inline-block;max-width:90%;margin:25px;padding:8px}.stars{font-size:28px}@media(max-width:600px){body{padding:10px}.title{font-size:32px}.name{font-size:30px}}</style></head><body>'+
+'<div class="certificate"><div class="stars">★ ★ ★</div><div class="title">Sijil '+award+'</div><p class="type">MISI ANGKASA KATA SENDI NAMA</p><p>Dengan ini disahkan bahawa</p><div class="name">'+safeName+'</div><p>telah menyertai permainan interaktif<br><b>Kata Sendi Nama: di • dari • ke</b></p><p><b>Markah: '+score+' / 10</b></p><p>Tahun 1 • Bahasa Melayu</p><div class="stars">🚀 ⭐ 🌙</div></div></body></html>';
+
+const blob=new Blob([cert],{type:"text/html;charset=utf-8"});
+const url=URL.createObjectURL(blob);
+const a=document.createElement("a");
+a.href=url;a.download=fileName;
+document.body.appendChild(a);a.click();a.remove();
+setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+showQuestion();
+})();
+</script>
+</body>
+</html>
